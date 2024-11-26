@@ -101,3 +101,62 @@ summary_details_df = pd.DataFrame(summary_details)
 
 import ace_tools as tools; tools.display_dataframe_to_user(name="Résumé Détail des Résultats Simulés", dataframe=summary_details_df)
 
+#1. Incorporation des co-bénéfices environnementaux
+
+# Hypothèse : chaque hectare cultivé améliore la biodiversité, augmente la rétention d'eau et régénère les sols
+biodiversite_score_par_hectare = 5  # Score hypothétique pour chaque hectare cultivé
+retention_eau_par_hectare = 1000  # m³ d'eau retenue par hectare
+regeneration_sol_par_hectare = 1.5  # Amélioration des sols en %
+
+# Calcul des co-bénéfices
+df["Score Biodiversité"] = df["Hectares Cultivés"] * biodiversite_score_par_hectare
+df["Rétention d'Eau (m³)"] = df["Hectares Cultivés"] * retention_eau_par_hectare
+df["Régénération des Sols (%)"] = df["Hectares Cultivés"] * regeneration_sol_par_hectare
+
+# Résumé des co-bénéfices
+summary_co_benefits = {
+    "Total Score Biodiversité": [df["Score Biodiversité"].sum()],
+    "Total Rétention d'Eau (m³)": [df["Rétention d'Eau (m³)"].sum()],
+    "Amélioration Totale des Sols (%)": [df["Régénération des Sols (%)"].sum()]
+}
+summary_co_benefits_df = pd.DataFrame(summary_co_benefits)
+
+# 2. Analyse du retour sur investissement (ROI)
+
+# Calcul du ROI
+df["ROI (%)"] = (df["Bénéfice Net (€)"] / df["Coût Total (€)"]) * 100
+
+# Résumé ROI
+roi_summary = {
+    "ROI Moyen (%)": [df["ROI (%)"].mean()],
+    "ROI Maximal (%)": [df["ROI (%)"].max()],
+    "ROI Minimal (%)": [df["ROI (%)"].min()]
+}
+roi_summary_df = pd.DataFrame(roi_summary)
+
+# 3. Scénarios de prix des crédits carbone
+
+# Scénarios de prix des crédits carbone
+prix_scenarios = [30, 50, 100]
+revenus_scenarios = {}
+
+for prix in prix_scenarios:
+    revenu = hectares * capture_CO2_par_hectare * prix
+    revenus_scenarios[f"Revenu pour {prix}€/tCO2"] = revenu
+
+# Conversion en DataFrame pour visualisation
+scenarios_df = pd.DataFrame(revenus_scenarios, index=hectares)
+scenarios_df.index.name = "Hectares Cultivés"
+
+# 4. Visualisation des scénarios
+
+plt.figure(figsize=(12, 6))
+for prix in prix_scenarios:
+    plt.plot(hectares, scenarios_df[f"Revenu pour {prix}€/tCO2"], label=f"{prix} €/tCO2")
+plt.title("Revenus estimés selon différents prix des crédits carbone")
+plt.xlabel("Hectares cultivés")
+plt.ylabel("Revenus (€)")
+plt.legend()
+plt.grid()
+plt.show()
+
